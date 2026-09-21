@@ -8,19 +8,19 @@ account record.
 
 | | |
 | --- | --- |
-| Accounts | **8,419** |
-| Segments | **12** (from 15 tabs across 6 documents) |
-| Current licenses | **10,113,862** |
-| Sector-aligned | 6,620 Core (78.6%) + 658 Adjacent |
-| **Off-sector** | **853 (10.1%)** |
-| **No sector logged** | **288 (3.4%)** |
+| Accounts | **9,496** |
+| Segments | **12** (from 13 populated tabs across 6 documents) |
+| Current licenses | **10,239,971** |
+| Sector-aligned | 7,568 Core (79.7%) + 697 Adjacent |
+| **Off-sector** | **943 (9.9%)** |
+| **No sector logged** | **288 (3.0%)** |
 
 ## What's here
 
 | Path | Contents |
 | --- | --- |
-| `data/master_customers.csv` | All 8,419 accounts, 24 columns, with segment, logged sub-sector and alignment verdict. |
-| `data/sector_exceptions.csv` | The 1,799 accounts that are **not** cleanly Core — the review queue, off-sector first. |
+| `data/master_customers.csv` | All 9,496 accounts, 24 columns, with segment, logged sub-sector and alignment verdict. |
+| `data/sector_exceptions.csv` | The 1,928 accounts that are **not** cleanly Core — the review queue, off-sector first. |
 
 ## Sources merged
 
@@ -29,10 +29,10 @@ account record.
 | AMER Customers – Construction, Engineering, Mining, Agriculture (Quip HTML) | Construction, Engineering, Mining, Agriculture | 1,853 |
 | AMER Hardware / Software / Semiconductor Customers | Hardware (10+), Software (200+), Semiconductor (10+) | 2,277 |
 | AMER Retail / Consumer Goods Customers | Consumer Goods, Retail | 2,545 |
-| AMER Discrete MFG Customers 10-49 Users | 10-19 Users **only** | 1,107 |
+| AMER Discrete MFG Customers 10-49 Users | 10-19 Users, 20-49 Users | 2,184 |
 | AMER Energy Customers | Oil & Gas, Utilities | 637 |
 | **AMER Pharma / Med Device / Diagnostic Customers** | **none — see below** | **0** |
-| **Total** | **12 tabs** | **8,419** |
+| **Total** | **13 tabs** | **9,496** |
 
 ## Blocking data problems
 
@@ -42,8 +42,10 @@ account record.
    on export and the cells hold no recoverable values. **These three segments are missing
    from this register entirely.** A re-export from Quip with values pasted in place is the
    only fix.
-2. **The Discrete MFG `20-49 Users` sheet is empty.** The workbook is named *10-49 Users*
-   and carries two sheets, but only `10-19 Users` has rows — the 20-49 cohort is absent.
+2. ~~**The Discrete MFG `20-49 Users` sheet is empty.**~~ **Resolved.** The workbook was
+   re-supplied with both bands populated — 1,107 accounts at 10-19 users and 1,077 at
+   20-49 users, 2,184 in total. Both bands are in the register, and the two sets are
+   disjoint (no account appears in both).
 3. **The Engineering tab has no `Sub-Sector` at all** — 288 of 288 rows blank. It is the
    only segment that cannot be reconciled, and it includes some of the largest accounts in
    the register (Jacobs Engineering, 64,500 licenses; Parsons, 17,302).
@@ -59,7 +61,7 @@ field on its Salesforce record. Comparing the two is the point of this exercise.
 | Engineering | Construction/Eng/Mining/Ag | 288 | — | — | — | **288** | — |
 | Agriculture | Construction/Eng/Mining/Ag | 45 | 36 | 3 | 6 | — | 13.3% |
 | Mining | Construction/Eng/Mining/Ag | 23 | 17 | — | 6 | — | **26.1%** |
-| Discrete MFG | Discrete MFG 10-49 | 1,107 | 923 | 97 | 87 | — | 7.9% |
+| Discrete MFG | Discrete MFG 10-49 | 2,184 | 1,871 | 136 | 177 | — | 8.1% |
 | Utilities | AMER Energy | 375 | 375 | — | — | — | **0.0%** |
 | Oil & Gas | AMER Energy | 262 | 262 | — | — | — | **0.0%** |
 | Hardware | HW/SW/Semi | 868 | 703 | 20 | 145 | — | 16.7% |
@@ -88,14 +90,15 @@ proportionally** (26.1%, 6 of 23). **Retail is worst in absolute terms** (287 ac
 
 ## Verification
 
-- **No duplicates, and no cross-segment overlap.** All 8,419 `Account ID` values are unique
-  and no account appears in two segment tabs — not even across Retail and Consumer Goods, or
+- **No duplicates, and no cross-segment overlap.** All 9,496 `Account ID` values are unique
+  and no account appears in two segment tabs — including across the two Discrete MFG user bands — not even across Retail and Consumer Goods, or
   Hardware and Software, where overlap would be natural. The segmentation is genuinely
   mutually exclusive, so every conflict above is a tab-vs-field disagreement, never a
   double-count.
 - **Row counts reconcile.** Parsed license sums match the `Total` row printed in all four
   Quip tables exactly (Construction 254,062 / 293,956; Engineering 46,636 / 128,727;
-  Mining 1,604 / 1,679; Agriculture 7,234 / 7,385). Nothing was truncated on import.
+  Mining 1,604 / 1,679; Agriculture 7,234 / 7,385), and Discrete MFG's 156,266 licenses
+  reconcile to its two sheet totals (126,109 + 30,157). Nothing was truncated on import.
 
 ## Method notes
 
