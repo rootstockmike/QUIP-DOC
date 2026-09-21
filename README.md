@@ -8,19 +8,19 @@ account record.
 
 | | |
 | --- | --- |
-| Accounts | **9,496** |
-| Segments | **12** (from 13 populated tabs across 6 documents) |
-| Current licenses | **10,239,971** |
-| Sector-aligned | 7,568 Core (79.7%) + 697 Adjacent |
-| **Off-sector** | **943 (9.9%)** |
-| **No sector logged** | **288 (3.0%)** |
+| Accounts | **10,555** |
+| Segments | **13** (from 14 populated tabs across 7 source files) |
+| Current licenses | **10,909,942** |
+| Sector-aligned | 8,433 Core (79.9%) + 804 Adjacent |
+| **Off-sector** | **1,030 (9.8%)** |
+| **No sector logged** | **288 (2.7%)** |
 
 ## What's here
 
 | Path | Contents |
 | --- | --- |
-| `data/master_customers.csv` | All 9,496 accounts, 24 columns, with segment, logged sub-sector and alignment verdict. |
-| `data/sector_exceptions.csv` | The 1,928 accounts that are **not** cleanly Core — the review queue, off-sector first. |
+| `data/master_customers.csv` | All 10,555 accounts, 24 columns, with segment, logged sub-sector and alignment verdict. |
+| `data/sector_exceptions.csv` | The 2,122 accounts that are **not** cleanly Core — the review queue, off-sector first. |
 
 ## Sources merged
 
@@ -31,17 +31,18 @@ account record.
 | AMER Retail / Consumer Goods Customers | Consumer Goods, Retail | 2,545 |
 | AMER Discrete MFG Customers 10-49 Users | 10-19 Users, 20-49 Users | 2,184 |
 | AMER Energy Customers | Oil & Gas, Utilities | 637 |
-| **AMER Pharma / Med Device / Diagnostic Customers** | **none — see below** | **0** |
-| **Total** | **13 tabs** | **9,496** |
+| AMER Med Device / Diagnostic — MedDevice 10+ Users (CSV) | MedDevice (10+ Users) | 1,059 |
+| **AMER Pharma / Med Device / Diagnostic Customers (xlsx)** | **Diagnostics, Pharma — see below** | **0** |
+| **Total** | **14 tabs** | **10,555** |
 
 ## Blocking data problems
 
-1. **The Pharma / Med Device / Diagnostic workbook is unreadable.** All three sheets —
-   `MedDevice (10+ Users)`, `Diagnostics_Post Acute (10+ Users)` and `Pharma (20+ Users)` —
-   contain a single `#REF` error where the account table should be. The formula links broke
-   on export and the cells hold no recoverable values. **These three segments are missing
-   from this register entirely.** A re-export from Quip with values pasted in place is the
-   only fix.
+1. **Two segments are still missing: Diagnostics_Post Acute and Pharma.** In the original
+   Pharma / Med Device / Diagnostic xlsx, all three sheets contained a single `#REF` error
+   where the account table should be — the whole workbook held only three distinct strings
+   and no formulas left to recalculate. **Med Device has since been re-supplied as a CSV**
+   (1,059 accounts, now in the register); `Diagnostics_Post Acute (10+ Users)` and
+   `Pharma (20+ Users)` still need the same treatment.
 2. ~~**The Discrete MFG `20-49 Users` sheet is empty.**~~ **Resolved.** The workbook was
    re-supplied with both bands populated — 1,107 accounts at 10-19 users and 1,077 at
    20-49 users, 2,184 in total. Both bands are in the register, and the two sets are
@@ -69,6 +70,7 @@ field on its Salesforce record. Comparing the two is the point of this exercise.
 | Semiconductor | HW/SW/Semi | 205 | 182 | 11 | 12 | — | 5.9% |
 | Consumer Goods | Retail/CG | 1,146 | 810 | 237 | 99 | — | 8.6% |
 | Retail | Retail/CG | 1,399 | 956 | 156 | 287 | — | **20.5%** |
+| Med Device | Med Device/Diagnostics (CSV) | 1,059 | 865 | 107 | 87 | — | 8.2% |
 
 **Energy is perfect** — 637 accounts, zero drift in either tab. **Mining is worst
 proportionally** (26.1%, 6 of 23). **Retail is worst in absolute terms** (287 accounts).
@@ -90,7 +92,7 @@ proportionally** (26.1%, 6 of 23). **Retail is worst in absolute terms** (287 ac
 
 ## Verification
 
-- **No duplicates, and no cross-segment overlap.** All 9,496 `Account ID` values are unique
+- **No duplicates, and no cross-segment overlap.** All 10,555 `Account ID` values are unique
   and no account appears in two segment tabs — including across the two Discrete MFG user bands — not even across Retail and Consumer Goods, or
   Hardware and Software, where overlap would be natural. The segmentation is genuinely
   mutually exclusive, so every conflict above is a tab-vs-field disagreement, never a
@@ -102,6 +104,12 @@ proportionally** (26.1%, 6 of 23). **Retail is worst in absolute terms** (287 ac
 
 ## Method notes
 
+- **The Med Device CSV needed column repair.** Its `Annual Revenue` values carry unquoted
+  thousands separators (`$883,033,043`), so a plain comma split shifts every column to the
+  right of it — only 19 of 1,059 rows were unshifted. The loader merges the stray fields
+  back into `Annual Revenue`, then validates: all 1,059 rows resolve to exactly 28 fields
+  with zero malformed Account IDs and zero non-numeric Employees. Anyone else reading this
+  CSV needs the same fix or their sector data will be silently wrong.
 - **Columns are matched by header name, not position.** This is required, not defensive:
   the Semiconductor sheet orders its columns differently — `Sub-Sector` sits in column T
   rather than Z — and four sheets carry an extra `Industry Focus` column that shifts
